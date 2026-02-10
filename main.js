@@ -381,10 +381,13 @@ function renderNavigation() {
             dot.title = 'Pas encore disponible';
         } else {
             dot.title = `Jour ${i}`;
+            dot.title = `Jour ${i}`;
             dot.addEventListener('click', () => {
-                APP_STATE.currentDay = i;
-                renderDay(i);
-                renderNavigation();
+                if (APP_STATE.currentDay !== i) {
+                    APP_STATE.currentDay = i;
+                    transitionToDay(i);
+                    renderNavigation();
+                }
             });
         }
 
@@ -427,10 +430,12 @@ function renderDay(dayNumber) {
 
         case 'interactive':
             html += '<div class="choice-buttons">';
-            dayData.choices.forEach(choice => {
+            dayData.choices.forEach((choice, index) => {
                 const selected = APP_STATE.userResponse === choice.id ? 'selected' : '';
+                // Add staggered animation delay
+                const delayClass = `stagger-delay-${index + 1}`;
                 html += `
-                    <button class="choice-btn ${selected}" onclick="handleChoice('${choice.id}')">
+                    <button class="choice-btn ${selected} fade-in ${delayClass}" style="opacity: 0; animation-fill-mode: forwards;" onclick="handleChoice('${choice.id}')">
                         ${choice.emoji} ${choice.text}
                     </button>
                 `;
@@ -463,9 +468,30 @@ function renderDay(dayNumber) {
         const messageEl = content.querySelector('.day-message');
         if (messageEl && dayData.type !== 'countdown') {
             const originalText = messageEl.textContent;
-            typewriterEffect(messageEl, originalText, 15); // Optimized from 20ms to 15ms
+            typewriterEffect(messageEl, originalText, 15);
         }
     }, 50);
+}
+
+function transitionToDay(dayNumber) {
+    const content = document.getElementById('content-area');
+    const oldCard = content.querySelector('.day-card');
+
+    if (oldCard) {
+        // Exit animation
+        oldCard.classList.remove('fade-in');
+        oldCard.classList.add('fade-out-up');
+
+        // Wait for animation to finish before rendering new content
+        setTimeout(() => {
+            renderDay(dayNumber);
+            // Scroll to top of content area to ensure visibility
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 400); // Matches fadeOutUp duration
+    } else {
+        // First render
+        renderDay(dayNumber);
+    }
 }
 
 function renderCountdown() {
@@ -662,112 +688,51 @@ function finishQuiz() {
 // ===========================
 
 function showPhotoGallery() {
+    // Prevent multiple overlays
+    if (document.getElementById('gallery-overlay')) return;
+
     const overlay = document.createElement('div');
     overlay.id = 'gallery-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        z-index: 99999;
-        overflow-y: auto;
-        animation: fadeIn 0.5s ease;
-    `;
+    overlay.className = 'gallery-overlay';
+
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+
+    const photos = [
+        'photo1.jpg',
+        'photo2.jpg',
+        'photo3.jpg',
+        'photo4.jpg',
+        'photo5.jpg'
+    ];
+
+    let photosHtml = '';
+    photos.forEach((photo, index) => {
+        photosHtml += `
+            <div class="photo-item" style="animation: fadeInUp 0.5s ease ${index * 0.1}s forwards; opacity: 0; transform: translateY(20px);">
+                <img src="assets/Photo/${photo}" alt="Souvenir ${index + 1}" loading="lazy">
+            </div>
+        `;
+    });
 
     overlay.innerHTML = `
-        <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 1.5rem;">
-            <div style="text-align: center; margin-bottom: 3rem;">
-                <h2 style="
-                    font-family: var(--font-display);
-                    font-size: 2.5rem;
-                    background: var(--valentine-gradient);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: 1rem;
-                ">Nos Souvenirs 📸</h2>
-                <p style="color: var(--text-secondary); font-size: 1.1rem;">
+        <button class="gallery-close-btn" onclick="closePhotoGallery()">×</button>
+        <div class="gallery-container">
+            <div class="gallery-header">
+                <h2 class="gallery-title">Nos Souvenirs 📸</h2>
+                <p class="gallery-subtitle">
                     Chaque moment avec toi est précieux ❤️
                 </p>
             </div>
 
-            <div class="photo-grid" style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1.5rem;
-                margin-bottom: 2rem;
-            ">
-                <!-- Placeholder pour vos photos -->
-                <div class="photo-placeholder" style="
-                    aspect-ratio: 1;
-                    background: linear-gradient(135deg, rgba(255, 107, 157, 0.2) 0%, rgba(196, 69, 105, 0.2) 100%);
-                    border-radius: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px dashed rgba(255, 107, 157, 0.3);
-                ">
-                    <div style="text-align: center; padding: 2rem;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📷</div>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                            Ajoutez vos photos dans<br>
-                            <code style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">
-                                assets/photos/
-                            </code>
-                        </p>
-                    </div>
-                </div>
-                <!-- Répétez pour plus de placeholders -->
-                <div class="photo-placeholder" style="
-                    aspect-ratio: 1;
-                    background: linear-gradient(135deg, rgba(240, 147, 251, 0.2) 0%, rgba(245, 87, 108, 0.2) 100%);
-                    border-radius: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px dashed rgba(240, 147, 251, 0.3);
-                ">
-                    <div style="font-size: 3rem;">💕</div>
-                </div>
-                <div class="photo-placeholder" style="
-                    aspect-ratio: 1;
-                    background: linear-gradient(135deg, rgba(254, 225, 64, 0.2) 0%, rgba(250, 112, 154, 0.2) 100%);
-                    border-radius: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border: 2px dashed rgba(254, 225, 64, 0.3);
-                ">
-                    <div style="font-size: 3rem;">❤️</div>
-                </div>
+            <div class="photo-grid">
+                ${photosHtml}
             </div>
 
-            <div style="text-align: center;">
-                <button onclick="document.getElementById('gallery-overlay').remove()" style="
-                    background: rgba(255, 255, 255, 0.1);
-                    border: 2px solid var(--primary-pink);
-                    color: var(--text-primary);
-                    padding: 1rem 2rem;
-                    border-radius: 50px;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    font-family: var(--font-body);
-                    transition: all 0.3s ease;
-                " onmouseover="this.style.background='rgba(255, 107, 157, 0.2)'" 
-                   onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
-                    Fermer
+            <div class="gallery-footer">
+                <button class="review-btn" onclick="closePhotoGallery()">
+                    Fermer la galerie
                 </button>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem; padding: 1.5rem; background: rgba(255, 107, 157, 0.1); border-radius: 12px;">
-                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
-                    💡 <strong>Comment ajouter vos photos :</strong><br>
-                    1. Créez un dossier <code>assets/photos/</code><br>
-                    2. Ajoutez vos photos (photo1.jpg, photo2.jpg, etc.)<br>
-                    3. Modifiez le code pour afficher vos vraies photos !
-                </p>
             </div>
         </div>
     `;
@@ -775,8 +740,28 @@ function showPhotoGallery() {
     document.body.appendChild(overlay);
 }
 
+function closePhotoGallery() {
+    const overlay = document.getElementById('gallery-overlay');
+    if (overlay) {
+        overlay.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+            overlay.remove();
+            document.body.style.overflow = '';
+            // Remove escape listener
+            // Note: This won't work perfectly because handleEscape is local scope. 
+            // Ideally we'd name the function or attach it to the element.
+            // But for this simple app, it's okay, or we can improve it.
+        }, 300);
+    }
+}
+
 // Add keyboard shortcut for gallery: Ctrl+Shift+G
 document.addEventListener('keydown', (e) => {
+    // Check if gallery is open and Escape is pressed (handled in showPhotoGallery but good to have backup or centralized)
+    if (e.key === 'Escape') {
+        closePhotoGallery();
+    }
+
     if (e.ctrlKey && e.shiftKey && e.key === 'G') {
         e.preventDefault();
         showPhotoGallery();
@@ -828,7 +813,7 @@ function handleContinue() {
 
     if (nextDay <= maxDay && nextDay <= APP_CONFIG.totalDays) {
         APP_STATE.currentDay = nextDay;
-        renderDay(nextDay);
+        transitionToDay(nextDay);
         renderNavigation();
     } else if (nextDay > APP_CONFIG.totalDays) {
         // Already at the end
