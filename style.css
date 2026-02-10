@@ -1346,8 +1346,60 @@ body::before {
     70% {
         box-shadow: 0 0 0 15px rgba(255, 77, 136, 0);
     }
+}
 
+/* ===========================
+   Music Start Modal
+   =========================== */
+.music-modal {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    pointer-events: none;
+    /* Let clicks pass through if hidden */
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.music-modal.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.music-start-btn {
+    background: rgba(255, 77, 136, 0.9);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 77, 136, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: bounce-subtle 2s infinite;
+}
+
+.music-start-btn:hover {
+    transform: translateY(-2px);
+    background: var(--primary-pink);
+    box-shadow: 0 6px 20px rgba(255, 77, 136, 0.6);
+}
+
+@keyframes bounce-subtle {
+
+    0%,
     100% {
-        box-shadow: 0 0 0 0 rgba(255, 77, 136, 0);
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
     }
 }

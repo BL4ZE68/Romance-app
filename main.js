@@ -1064,6 +1064,8 @@ document.addEventListener('DOMContentLoaded', init);
 function initAudio() {
     const audio = document.getElementById('bg-music');
     const controlBtn = document.getElementById('music-control');
+    const musicModal = document.getElementById('music-modal');
+    const musicStartBtn = document.getElementById('music-start-btn');
 
     if (!audio || !controlBtn) return;
 
@@ -1080,11 +1082,24 @@ function initAudio() {
         }
     }
 
-    // Manual Toggle
+    function showMusicPrompt() {
+        if (musicModal && audio.paused) {
+            musicModal.classList.add('visible');
+        }
+    }
+
+    function hideMusicPrompt() {
+        if (musicModal) {
+            musicModal.classList.remove('visible');
+        }
+    }
+
+    // Manual Toggle (Top Right)
     controlBtn.addEventListener('click', () => {
         if (audio.paused) {
             audio.play().then(() => {
                 updateIcon();
+                hideMusicPrompt();
                 notifications.show('Musique activée 🎵', 'info');
             }).catch(e => {
                 console.error("Audio play failed:", e);
@@ -1097,17 +1112,33 @@ function initAudio() {
         }
     });
 
+    // Explicit Start Button (Modal)
+    if (musicStartBtn) {
+        musicStartBtn.addEventListener('click', () => {
+            audio.play().then(() => {
+                updateIcon();
+                hideMusicPrompt();
+                notifications.show('Musique activée 🎵', 'info');
+            }).catch(e => {
+                console.error("Audio play failed:", e);
+                notifications.show('Impossible de lire l\'audio', 'error');
+            });
+        });
+    }
+
     // Aggressive Autoplay Logic
     const attemptPlay = () => {
         audio.play().then(() => {
             updateIcon();
+            hideMusicPrompt();
             // Success! Remove all interaction listeners
             ['click', 'mousemove', 'keydown', 'touchstart', 'scroll'].forEach(event => {
                 document.body.removeEventListener(event, attemptPlay);
             });
         }).catch(error => {
-            // Autoplay prevented, waiting for interaction...
+            // Autoplay prevented
             updateIcon();
+            showMusicPrompt();
         });
     };
 
