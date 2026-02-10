@@ -69,53 +69,34 @@ body {
 }
 
 /* Animated gradient background - Layer 1 */
+/* Animated gradient background - Optimized */
 body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background:
-        radial-gradient(circle at 50% 50%, rgba(255, 77, 136, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 20% 80%, rgba(100, 50, 255, 0.08) 0%, transparent 40%);
-    animation: gradientShift 25s ease infinite alternate;
-    z-index: -3;
-    filter: blur(80px);
-    /* Soften the blobs */
-    will-change: transform;
-}
-
-/* Animated gradient background - Layer 2 */
-body::after {
     content: '';
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: -1;
-    opacity: 0.6;
+    background: linear-gradient(-45deg, #0f0c15, #1a0e1e, #2d1b36, #1a0e1e);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -3;
+    will-change: background-position;
 }
 
+/* Noise filter removed for performance */
+
 @keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
 
-    0%,
+    50% {
+        background-position: 100% 50%;
+    }
+
     100% {
-        transform: translate3d(0, 0, 0) rotate(0deg);
-        opacity: 1;
-    }
-
-    33% {
-        transform: translate3d(5%, 5%, 0) rotate(120deg);
-        opacity: 0.8;
-    }
-
-    66% {
-        transform: translate3d(-5%, 3%, 0) rotate(240deg);
-        opacity: 0.9;
+        background-position: 0% 50%;
     }
 }
 
@@ -1206,5 +1187,110 @@ body::after {
 
     .gallery-title {
         font-size: 2rem;
+    }
+}
+
+/* ===========================
+   Notification System
+   =========================== */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100000;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-toast {
+    background: rgba(15, 12, 21, 0.85);
+    /* Darker backdrop */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    min-width: 300px;
+    pointer-events: auto;
+    animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.notification-toast::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--primary-pink);
+}
+
+.notification-toast.success::before {
+    background: #4cd964;
+}
+
+.notification-toast.info::before {
+    background: #5ac8fa;
+}
+
+.notification-toast.warning::before {
+    background: #ffcc00;
+}
+
+.notification-toast.error::before {
+    background: #ff3b30;
+}
+
+.notification-toast.love::before {
+    background: #ff4d88;
+}
+
+.notification-toast.reminder::before {
+    background: #bf5af2;
+}
+
+.notification-icon {
+    font-size: 1.2rem;
+}
+
+.notification-toast.closing {
+    animation: fadeOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+        margin-bottom: -60px;
+        /* Collapse space */
     }
 }

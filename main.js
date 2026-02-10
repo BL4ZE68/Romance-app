@@ -16,6 +16,91 @@ const APP_STATE = {
 };
 
 // ===========================
+// Notification System
+// ===========================
+class NotificationSystem {
+    constructor() {
+        this.container = document.createElement('div');
+        this.container.className = 'notification-container';
+        document.body.appendChild(this.container);
+    }
+
+    show(message, type = 'info', duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `notification-toast ${type}`;
+
+        const iconMap = {
+            success: '✅',
+            info: 'ℹ️',
+            warning: '⚠️',
+            error: '❌',
+            love: '❤️',
+            reminder: '⏰'
+        };
+
+        const icon = iconMap[type] || iconMap.info;
+
+        toast.innerHTML = `
+            <span class="notification-icon">${icon}</span>
+            <span class="notification-message">${message}</span>
+        `;
+
+        // Click to dismiss
+        toast.addEventListener('click', () => {
+            this.dismiss(toast);
+        });
+
+        this.container.appendChild(toast);
+
+        // Auto dismiss
+        setTimeout(() => {
+            this.dismiss(toast);
+        }, duration);
+    }
+
+    dismiss(toast) {
+        if (toast.classList.contains('closing')) return;
+
+        toast.classList.add('closing');
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }
+
+    // System Notification methods
+    async requestPermission() {
+        if (!('Notification' in window)) {
+            console.log('This browser does not support desktop notification');
+            return false;
+        }
+
+        if (Notification.permission === 'granted') {
+            return true;
+        }
+
+        if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        }
+
+        return false;
+    }
+
+    showSystem(title, body, icon = '❤️') {
+        if (Notification.permission === 'granted') {
+            new Notification(title, {
+                body: body,
+                icon: 'assets/Photo/photo1.jpg', // Using an existing image as icon
+                badge: 'assets/Photo/photo1.jpg',
+                silent: false
+            });
+        }
+    }
+}
+
+const notifications = new NotificationSystem();
+
+// ===========================
 // Day Content Data
 // ===========================
 
@@ -156,10 +241,11 @@ function toggleDevMode() {
 
     if (APP_CONFIG.devMode) {
         console.log('🔧 Developer Mode ACTIVATED');
-        console.log('All days are now accessible for testing');
+        notifications.show('Mode Développeur Activé', 'warning');
         showDevModeUI();
     } else {
         console.log('🔧 Developer Mode DEACTIVATED');
+        notifications.show('Mode Développeur Désactivé', 'info');
         hideDevModeUI();
     }
 
@@ -697,6 +783,7 @@ function showPhotoGallery() {
 
     // Lock body scroll
     document.body.style.overflow = 'hidden';
+    notifications.show('Galerie de souvenirs ouverte 📸', 'info');
 
     const photos = [
         'photo1.jpg',
@@ -775,6 +862,7 @@ document.addEventListener('keydown', (e) => {
 function handleChoice(choiceId) {
     APP_STATE.userResponse = choiceId;
     saveState();
+    notifications.show('Réponse sauvegardée avec amour', 'love');
 
     // Heart explosion effect
     const rect = event.target.getBoundingClientRect();
@@ -840,8 +928,29 @@ function showComingSoonMessage() {
             <button class="review-btn" onclick="reviewAllDays()">
                 Revoir les jours précédents
             </button>
+            <button class="review-btn" onclick="handleNotifyMe()" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+                🔔 M'avertir pour la suite
+            </button>
         </div>
     `;
+
+    // Trigger reminder notification (in-app)
+    setTimeout(() => {
+        notifications.show('Rappel : Reviens demain pour la suite ! ⏰', 'reminder', 5000);
+    }, 1000);
+}
+
+function handleNotifyMe() {
+    notifications.requestPermission().then(granted => {
+        if (granted) {
+            notifications.show('Notifications activées ! Tu seras prévenu. ✅', 'success');
+            setTimeout(() => {
+                notifications.showSystem('Rappel activé 🔔', 'Tu recevras une notification quand la suite sera disponible !');
+            }, 1000);
+        } else {
+            notifications.show('Notifications refusées. Tu ne recevras pas d\'alerte. ❌', 'error');
+        }
+    });
 }
 
 function reviewAllDays() {
