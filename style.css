@@ -1294,3 +1294,60 @@ body::before {
         /* Collapse space */
     }
 }
+
+/* ===========================
+   Music Control
+   =========================== */
+.music-control {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-pink);
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: fadeInDown 1s ease;
+}
+
+.music-control:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(255, 77, 136, 0.3);
+}
+
+.music-control.playing {
+    background: var(--primary-pink);
+    color: white;
+    border-color: transparent;
+    animation: pulse-music 2s infinite;
+}
+
+.music-control.playing i {
+    animation: rock-music 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-music {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 136, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 77, 136, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 136, 0);
+    }
+}

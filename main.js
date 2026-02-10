@@ -11,7 +11,7 @@ const APP_CONFIG = {
 
 const APP_STATE = {
     currentDay: 1,
-    userResponse: null,
+    userResponse: [], // Changed to array for multiple choices
     visitedDays: []
 };
 
@@ -178,7 +178,12 @@ function loadState() {
     const saved = localStorage.getItem('romanceAppState');
     if (saved) {
         const parsedState = JSON.parse(saved);
-        APP_STATE.userResponse = parsedState.userResponse;
+        // Migration for legacy single response
+        if (parsedState.userResponse && !Array.isArray(parsedState.userResponse)) {
+            APP_STATE.userResponse = [parsedState.userResponse];
+        } else {
+            APP_STATE.userResponse = parsedState.userResponse || [];
+        }
         APP_STATE.visitedDays = parsedState.visitedDays || [];
     }
 }
@@ -517,16 +522,29 @@ function renderDay(dayNumber) {
         case 'interactive':
             html += '<div class="choice-buttons">';
             dayData.choices.forEach((choice, index) => {
-                const selected = APP_STATE.userResponse === choice.id ? 'selected' : '';
+                const isSelected = Array.isArray(APP_STATE.userResponse) && APP_STATE.userResponse.includes(choice.id);
+                const selectedClass = isSelected ? 'selected' : '';
                 // Add staggered animation delay
                 const delayClass = `stagger-delay-${index + 1}`;
                 html += `
-                    <button class="choice-btn ${selected} fade-in ${delayClass}" style="opacity: 0; animation-fill-mode: forwards;" onclick="handleChoice('${choice.id}')">
+                    <button id="choice-${choice.id}" class="choice-btn ${selectedClass} fade-in ${delayClass}" style="opacity: 0; animation-fill-mode: forwards;" onclick="handleChoice('${choice.id}')">
                         ${choice.emoji} ${choice.text}
                     </button>
                 `;
             });
             html += '</div>';
+
+            // Validation button (initially hidden if no selection)
+            const hasSelection = Array.isArray(APP_STATE.userResponse) && APP_STATE.userResponse.length > 0;
+            const btnStyle = hasSelection ? '' : 'display: none;';
+
+            html += `
+                <div id="validate-container" style="text-align: center; margin-top: 2rem; ${btnStyle}">
+                    <button class="primary-btn fade-in" onclick="submitChoices()">
+                        Valider mes choix ❤️
+                    </button>
+                </div>
+            `;
             break;
 
         case 'countdown':
@@ -633,7 +651,7 @@ function renderFinalDay() {
     let html = '<div class="final-message">';
 
     // Show user's response from Day 2 if available
-    if (APP_STATE.userResponse) {
+    if (APP_STATE.userResponse && APP_STATE.userResponse.length > 0) {
         const responseText = {
             'tranquillite': 'la tranquillité',
             'joie': 'la joie',
@@ -643,10 +661,19 @@ function renderFinalDay() {
             'amour': 'l\'amour'
         };
 
+        const selectedTexts = APP_STATE.userResponse.map(id => responseText[id]).filter(Boolean);
+
+        let formattedText = '';
+        if (selectedTexts.length === 1) {
+            formattedText = selectedTexts[0];
+        } else if (selectedTexts.length > 1) {
+            const last = selectedTexts.pop();
+            formattedText = selectedTexts.join(', ') + ' et ' + last;
+        }
+
         html += `
             <p class="day-message" style="font-size: 1rem; opacity: 0.8; margin-bottom: 2rem;">
-                Tu m'as dit que tu ressentais ${responseText[APP_STATE.userResponse]} quand tu es avec moi.
-                C'est exactement ce que je ressens aussi. ❤️
+                je suis heureux que tu ressentes ${formattedText} quand tu es avec moi. ❤️
             </p>
         `;
     }
@@ -860,39 +887,62 @@ document.addEventListener('keydown', (e) => {
 // ===========================
 
 function handleChoice(choiceId) {
-    APP_STATE.userResponse = choiceId;
+    // Initialize if null (legacy)
+    if (!APP_STATE.userResponse) APP_STATE.userResponse = [];
+
+    // Toggle selection
+    const index = APP_STATE.userResponse.indexOf(choiceId);
+    if (index > -1) {
+        APP_STATE.userResponse.splice(index, 1);
+        // Visual update
+        document.getElementById(`choice-${choiceId}`).classList.remove('selected');
+    } else {
+        APP_STATE.userResponse.push(choiceId);
+        // Visual update
+        const btn = document.getElementById(`choice-${choiceId}`);
+        btn.classList.add('selected');
+        btn.classList.add('btn-clicked');
+
+        // Heart explosion effect for selection
+        const rect = btn.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        createHeartExplosion(x, y);
+    }
+
     saveState();
-    notifications.show('Réponse sauvegardée avec amour', 'love');
 
-    // Heart explosion effect
-    const rect = event.target.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    createHeartExplosion(x, y);
+    // Show/Hide Validate Button
+    const validateContainer = document.getElementById('validate-container');
+    if (APP_STATE.userResponse.length > 0) {
+        validateContainer.style.display = 'block';
+    } else {
+        validateContainer.style.display = 'none';
+    }
+}
 
-    // Update UI to show selection
-    document.querySelectorAll('.choice-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    event.target.classList.add('selected');
-    event.target.classList.add('btn-clicked');
+function submitChoices() {
+    notifications.show('Réponses sauvegardées avec amour', 'love');
 
     // Show confirmation message
-    setTimeout(() => {
-        const card = document.querySelector('.day-card');
-        const confirmMsg = document.createElement('p');
-        confirmMsg.className = 'day-message fade-in';
-        confirmMsg.style.marginTop = '2rem';
-        confirmMsg.textContent = 'Merci pour ta réponse. Elle compte beaucoup pour moi. ❤️';
-        card.appendChild(confirmMsg);
+    const card = document.querySelector('.day-card');
 
-        // Add continue button
-        const continueBtn = document.createElement('button');
-        continueBtn.className = 'primary-btn mt-lg';
-        continueBtn.textContent = 'Continuer demain';
-        continueBtn.onclick = handleContinue;
-        card.appendChild(continueBtn);
-    }, 800);
+    // Hide choices and button to prevent changes (optional, but cleaner)
+    document.querySelector('.choice-buttons').style.pointerEvents = 'none';
+    document.getElementById('validate-container').style.display = 'none';
+
+    const confirmMsg = document.createElement('p');
+    confirmMsg.className = 'day-message fade-in';
+    confirmMsg.style.marginTop = '2rem';
+    confirmMsg.textContent = 'Merci pour tes réponses. Elles comptent beaucoup pour moi. ❤️';
+    card.appendChild(confirmMsg);
+
+    // Add continue button
+    const continueBtn = document.createElement('button');
+    continueBtn.className = 'primary-btn mt-lg';
+    continueBtn.textContent = 'Continuer demain';
+    continueBtn.onclick = handleContinue;
+    card.appendChild(continueBtn);
 }
 
 function handleContinue() {
@@ -991,6 +1041,9 @@ function init() {
     // Render navigation
     renderNavigation();
 
+    // Initialize Audio
+    initAudio();
+
     // Create floating hearts
     createFloatingHearts();
 
@@ -1003,3 +1056,66 @@ function init() {
 
 // Start the app when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
+
+// ===========================
+// Audio System
+// ===========================
+
+function initAudio() {
+    const audio = document.getElementById('bg-music');
+    const controlBtn = document.getElementById('music-control');
+
+    if (!audio || !controlBtn) return;
+
+    // Set initial volume
+    audio.volume = 0.5;
+
+    function updateIcon() {
+        if (audio.paused) {
+            controlBtn.textContent = '🔇';
+            controlBtn.classList.remove('playing');
+        } else {
+            controlBtn.textContent = '🎵';
+            controlBtn.classList.add('playing');
+        }
+    }
+
+    // Manual Toggle
+    controlBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play().then(() => {
+                updateIcon();
+                notifications.show('Musique activée 🎵', 'info');
+            }).catch(e => {
+                console.error("Audio play failed:", e);
+                notifications.show('Impossible de lire l\'audio', 'error');
+            });
+        } else {
+            audio.pause();
+            updateIcon();
+            notifications.show('Musique en pause 🔇', 'info');
+        }
+    });
+
+    // Aggressive Autoplay Logic
+    const attemptPlay = () => {
+        audio.play().then(() => {
+            updateIcon();
+            // Success! Remove all interaction listeners
+            ['click', 'mousemove', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+                document.body.removeEventListener(event, attemptPlay);
+            });
+        }).catch(error => {
+            // Autoplay prevented, waiting for interaction...
+            updateIcon();
+        });
+    };
+
+    // Try immediately
+    attemptPlay();
+
+    // Add listeners for ANY interaction to start music
+    ['click', 'mousemove', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+        document.body.addEventListener(event, attemptPlay, { once: true });
+    });
+}
