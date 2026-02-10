@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="5 jours, une évidence - Une expérience romantique interactive du 10 au 14 février">
+    <meta name="theme-color" content="#1a0e1e">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="5 jours, une évidence ❤️">
+    <meta property="og:description" content="Une expérience romantique progressive vers la Saint-Valentin">
+    <meta property="og:image" content="assets/heart_favicon.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="5 jours, une évidence ❤️">
+    <meta name="twitter:description" content="Une expérience romantique progressive vers la Saint-Valentin">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/heart_favicon.png">
+    <link rel="apple-touch-icon" href="assets/heart_favicon.png">
+
+    <title>5 jours, une évidence ❤️</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="heart-loader">
+            <div class="heart"></div>
+        </div>
+        <p class="loading-text">Chargement de ton expérience...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app" class="app-container hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">5 jours, une évidence</h1>
+            <div class="date-indicator" id="date-indicator"></div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="content-area" id="content-area">
+            <!-- Dynamic content will be injected here -->
+        </main>
+
+        <!-- Navigation -->
+        <nav class="navigation" id="navigation">
+            <!-- Navigation buttons will be generated dynamically -->
+        </nav>
+
+        <!-- Floating Hearts Background -->
+        <div class="hearts-background" id="hearts-background"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

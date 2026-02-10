@@ -1,0 +1,951 @@
+/* ===========================
+   CSS Variables & Design System
+   =========================== */
+:root {
+    /* Colors */
+    --primary-pink: #ff6b9d;
+    --primary-red: #c44569;
+    --deep-red: #8b2635;
+    --soft-pink: #ffeef4;
+    --warm-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --romantic-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --valentine-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+
+    /* Dark mode colors */
+    --bg-dark: #1a0e1e;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --text-primary: #ffffff;
+    --text-secondary: #e0d4e8;
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Effects */
+    --blur-glass: blur(10px);
+    --shadow-soft: 0 8px 32px rgba(255, 107, 157, 0.15);
+    --shadow-strong: 0 12px 48px rgba(255, 107, 157, 0.3);
+}
+
+/* Performance optimizations */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===========================
+   Reset & Base Styles
+   =========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Animated gradient background - Layer 1 */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 20% 50%, rgba(255, 107, 157, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(196, 69, 105, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(139, 38, 53, 0.1) 0%, transparent 50%);
+    animation: gradientShift 20s ease infinite;
+    z-index: -3;
+    will-change: transform, opacity;
+}
+
+/* Animated gradient background - Layer 2 */
+body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 60% 30%, rgba(250, 112, 154, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 90% 60%, rgba(254, 225, 64, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 30% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    animation: gradientShift 25s ease-in-out infinite reverse;
+    z-index: -2;
+    will-change: transform, opacity;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    33% {
+        transform: translate3d(5%, 5%, 0) rotate(120deg);
+        opacity: 0.8;
+    }
+
+    66% {
+        transform: translate3d(-5%, 3%, 0) rotate(240deg);
+        opacity: 0.9;
+    }
+}
+
+/* ===========================
+   Loading Screen
+   =========================== */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.heart-loader {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.heart {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: var(--primary-pink);
+    transform: rotate(-45deg);
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.heart::before,
+.heart::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: var(--primary-pink);
+    border-radius: 50%;
+}
+
+.heart::before {
+    top: -40px;
+    left: 0;
+}
+
+.heart::after {
+    top: 0;
+    left: 40px;
+}
+
+.loading-text {
+    margin-top: var(--spacing-xl);
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+@keyframes heartbeat {
+
+    0%,
+    100% {
+        transform: rotate(-45deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(-45deg) scale(1.1);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ===========================
+   App Container
+   =========================== */
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.5s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.app-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* ===========================
+   Header
+   =========================== */
+.app-header {
+    text-align: center;
+    padding: var(--spacing-lg) 0;
+    animation: fadeInDown 0.8s ease;
+}
+
+.app-title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--valentine-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 1px;
+}
+
+.date-indicator {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* ===========================
+   Content Area
+   =========================== */
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--spacing-lg) 0;
+}
+
+.day-card {
+    background: var(--bg-card);
+    backdrop-filter: var(--blur-glass);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-soft);
+    animation: fadeInUp 0.8s ease;
+    position: relative;
+    overflow: hidden;
+    will-change: transform, opacity;
+    transform: translateZ(0);
+}
+
+.day-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--romantic-gradient);
+    opacity: 0.05;
+    z-index: -1;
+}
+
+.day-number {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--primary-pink);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.day-theme {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+.day-message {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    white-space: pre-line;
+}
+
+/* ===========================
+   Interactive Elements
+   =========================== */
+.choice-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.choice-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 107, 157, 0.3);
+    color: var(--text-primary);
+    padding: var(--spacing-md);
+    border-radius: 16px;
+    font-size: 1rem;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.choice-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--romantic-gradient);
+    opacity: 0.2;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.choice-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.choice-btn:hover {
+    border-color: var(--primary-pink);
+    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.3);
+    transform: translateY(-2px);
+}
+
+.choice-btn.selected {
+    background: var(--romantic-gradient);
+    border-color: transparent;
+    box-shadow: var(--shadow-strong);
+}
+
+.primary-btn {
+    background: var(--romantic-gradient);
+    border: none;
+    color: white;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-soft);
+    margin-top: var(--spacing-lg);
+    font-family: var(--font-body);
+    letter-spacing: 0.5px;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px) translateZ(0);
+    box-shadow: var(--shadow-strong);
+}
+
+.primary-btn:active {
+    transform: translateY(-1px) translateZ(0);
+}
+
+/* ===========================
+   Countdown Timer
+   =========================== */
+.countdown-container {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.countdown-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    min-width: 80px;
+}
+
+.countdown-value {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: var(--valentine-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.countdown-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: var(--spacing-xs);
+}
+
+/* ===========================
+   Navigation
+   =========================== */
+.navigation {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg) 0;
+    flex-wrap: wrap;
+}
+
+.nav-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.nav-dot:hover {
+    background: rgba(255, 107, 157, 0.5);
+    transform: scale(1.2);
+}
+
+.nav-dot.active {
+    background: var(--primary-pink);
+    width: 32px;
+    border-radius: 6px;
+}
+
+.nav-dot.locked {
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+/* ===========================
+   Floating Hearts Background
+   =========================== */
+.hearts-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Particle stars effect */
+.hearts-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.3), transparent),
+        radial-gradient(2px 2px at 60% 70%, rgba(255, 107, 157, 0.4), transparent),
+        radial-gradient(1px 1px at 50% 50%, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1px 1px at 80% 10%, rgba(196, 69, 105, 0.3), transparent),
+        radial-gradient(2px 2px at 90% 60%, rgba(255, 255, 255, 0.25), transparent),
+        radial-gradient(1px 1px at 33% 80%, rgba(240, 147, 251, 0.3), transparent),
+        radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.2), transparent);
+    background-size: 200% 200%;
+    background-position: 0% 0%;
+    animation: twinkle 8s ease-in-out infinite;
+}
+
+/* Additional particle layer */
+.hearts-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(1px 1px at 40% 20%, rgba(255, 255, 255, 0.4), transparent),
+        radial-gradient(1px 1px at 70% 40%, rgba(254, 225, 64, 0.3), transparent),
+        radial-gradient(2px 2px at 25% 60%, rgba(255, 107, 157, 0.3), transparent),
+        radial-gradient(1px 1px at 85% 85%, rgba(255, 255, 255, 0.25), transparent),
+        radial-gradient(1px 1px at 10% 40%, rgba(196, 69, 105, 0.35), transparent);
+    background-size: 250% 250%;
+    background-position: 100% 100%;
+    animation: twinkle 12s ease-in-out infinite reverse;
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 1;
+        background-position: 0% 0%;
+    }
+
+    50% {
+        opacity: 0.6;
+        background-position: 100% 100%;
+    }
+}
+
+.floating-heart {
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0.1;
+    animation: float 15s infinite ease-in-out;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.1;
+    }
+
+    90% {
+        opacity: 0.1;
+    }
+
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* ===========================
+   Final Day Special Styles
+   =========================== */
+.final-message {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.final-message .day-message {
+    font-size: 1.3rem;
+    line-height: 2;
+}
+
+.final-heart {
+    font-size: 4rem;
+    margin: var(--spacing-lg) 0;
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+.review-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--primary-pink);
+    color: var(--text-primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: var(--spacing-md);
+    font-family: var(--font-body);
+}
+
+.review-btn:hover {
+    background: rgba(255, 107, 157, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ===========================
+   Animations
+   =========================== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 1s ease;
+}
+
+/* Typewriter effect */
+.typewriter {
+    overflow: hidden;
+    white-space: pre-wrap;
+}
+
+/* Heart explosion effect */
+@keyframes heartExplode {
+    0% {
+        transform: translate(0, 0) scale(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(var(--tx, 0), var(--ty, 0)) scale(2) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+.heart-particle {
+    position: fixed;
+    font-size: 1.5rem;
+    pointer-events: none;
+    animation: heartExplode 1.5s ease-out forwards;
+    z-index: 9999;
+}
+
+/* Button click effect */
+@keyframes buttonPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(0.95);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn-clicked {
+    animation: buttonPulse 0.3s ease;
+}
+
+/* ===========================
+   Quiz Game Styles
+   =========================== */
+.quiz-container {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.quiz-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.quiz-progress-bar {
+    height: 100%;
+    background: var(--romantic-gradient);
+    transition: width 0.5s ease;
+    border-radius: 10px;
+}
+
+.quiz-question-number {
+    font-size: 0.9rem;
+    color: var(--primary-pink);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+}
+
+.quiz-emoji {
+    font-size: 4rem;
+    margin: 1.5rem 0;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.quiz-question {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.quiz-option {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 107, 157, 0.3);
+    color: var(--text-primary);
+    padding: 1.2rem 1.5rem;
+    border-radius: 16px;
+    font-size: 1.05rem;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-option::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--romantic-gradient);
+    opacity: 0.2;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.quiz-option:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.quiz-option:hover {
+    border-color: var(--primary-pink);
+    transform: translateX(5px);
+    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.3);
+}
+
+/* Quiz Results */
+.quiz-results {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.quiz-result-emoji {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.quiz-result-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    background: var(--valentine-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+}
+
+.quiz-result-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin: 2rem 0;
+    overflow: hidden;
+}
+
+.quiz-result-fill {
+    height: 100%;
+    background: var(--valentine-gradient);
+    border-radius: 10px;
+    animation: fillBar 1s ease forwards;
+}
+
+@keyframes fillBar {
+    from {
+        width: 0;
+    }
+}
+
+.quiz-result-message {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin: 2rem 0;
+}
+
+/* Easter egg animations */
+@keyframes heartRain {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+@media (max-width: 768px) {
+    .app-title {
+        font-size: 2rem;
+    }
+
+    .day-theme {
+        font-size: 1.5rem;
+    }
+
+    .day-message {
+        font-size: 1rem;
+    }
+
+    .day-card {
+        padding: var(--spacing-lg);
+    }
+
+    .countdown-value {
+        font-size: 2rem;
+    }
+
+    .countdown-item {
+        min-width: 60px;
+        padding: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        padding: var(--spacing-sm);
+    }
+
+    .app-title {
+        font-size: 1.75rem;
+    }
+
+    .day-card {
+        padding: var(--spacing-md);
+    }
+}
+
+/* ===========================
+   Utility Classes
+   =========================== */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
