@@ -15,6 +15,9 @@ const APP_STATE = {
     visitedDays: []
 };
 
+// Référence pour nettoyer l'interval du countdown
+let countdownInterval = null;
+
 // ===========================
 // Notification System
 // ===========================
@@ -40,10 +43,17 @@ class NotificationSystem {
 
         const icon = iconMap[type] || iconMap.info;
 
-        toast.innerHTML = `
-            <span class="notification-icon">${icon}</span>
-            <span class="notification-message">${message}</span>
-        `;
+        // Création sécurisée des éléments (évite XSS)
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'notification-icon';
+        iconSpan.textContent = icon;
+
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'notification-message';
+        messageSpan.textContent = message;
+
+        toast.appendChild(iconSpan);
+        toast.appendChild(messageSpan);
 
         // Click to dismiss
         toast.addEventListener('click', () => {
@@ -90,8 +100,8 @@ class NotificationSystem {
         if (Notification.permission === 'granted') {
             new Notification(title, {
                 body: body,
-                icon: 'assets/Photo/photo1.jpg', // Using an existing image as icon
-                badge: 'assets/Photo/photo1.jpg',
+                icon: 'assets/heart_favicon.png',
+                badge: 'assets/heart_favicon.png',
                 silent: false
             });
         }
@@ -177,14 +187,19 @@ function saveState() {
 function loadState() {
     const saved = localStorage.getItem('romanceAppState');
     if (saved) {
-        const parsedState = JSON.parse(saved);
-        // Migration for legacy single response
-        if (parsedState.userResponse && !Array.isArray(parsedState.userResponse)) {
-            APP_STATE.userResponse = [parsedState.userResponse];
-        } else {
-            APP_STATE.userResponse = parsedState.userResponse || [];
+        try {
+            const parsedState = JSON.parse(saved);
+            // Migration for legacy single response
+            if (parsedState.userResponse && !Array.isArray(parsedState.userResponse)) {
+                APP_STATE.userResponse = [parsedState.userResponse];
+            } else {
+                APP_STATE.userResponse = parsedState.userResponse || [];
+            }
+            APP_STATE.visitedDays = parsedState.visitedDays || [];
+        } catch (e) {
+            console.error('État corrompu, réinitialisation:', e);
+            localStorage.removeItem('romanceAppState');
         }
-        APP_STATE.visitedDays = parsedState.visitedDays || [];
     }
 }
 
@@ -472,7 +487,6 @@ function renderNavigation() {
             dot.title = 'Pas encore disponible';
         } else {
             dot.title = `Jour ${i}`;
-            dot.title = `Jour ${i}`;
             dot.addEventListener('click', () => {
                 if (APP_STATE.currentDay !== i) {
                     APP_STATE.currentDay = i;
@@ -526,8 +540,10 @@ function renderDay(dayNumber) {
                 const selectedClass = isSelected ? 'selected' : '';
                 // Add staggered animation delay
                 const delayClass = `stagger-delay-${index + 1}`;
+                // Si déjà sélectionné, pas besoin d'animation d'entrée
+                const animStyle = isSelected ? '' : 'opacity: 0; animation-fill-mode: forwards;';
                 html += `
-                    <button id="choice-${choice.id}" class="choice-btn ${selectedClass} fade-in ${delayClass}" style="opacity: 0; animation-fill-mode: forwards;" onclick="handleChoice('${choice.id}')">
+                    <button id="choice-${choice.id}" class="choice-btn ${selectedClass} ${isSelected ? '' : 'fade-in ' + delayClass}" style="${animStyle}" onclick="handleChoice('${choice.id}')">
                         ${choice.emoji} ${choice.text}
                     </button>
                 `;
@@ -636,11 +652,20 @@ function renderCountdown() {
     // Initial render
     const countdownHtml = updateCountdown();
 
+    // Nettoyer l'ancien interval s'il existe
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+
     // Update every second
-    setInterval(() => {
+    countdownInterval = setInterval(() => {
         const container = document.querySelector('.countdown-container');
         if (container) {
             container.outerHTML = updateCountdown();
+        } else {
+            // Si le container n'existe plus, nettoyer l'interval
+            clearInterval(countdownInterval);
+            countdownInterval = null;
         }
     }, 1000);
 
@@ -861,10 +886,6 @@ function closePhotoGallery() {
         setTimeout(() => {
             overlay.remove();
             document.body.style.overflow = '';
-            // Remove escape listener
-            // Note: This won't work perfectly because handleEscape is local scope. 
-            // Ideally we'd name the function or attach it to the element.
-            // But for this simple app, it's okay, or we can improve it.
         }, 300);
     }
 }
@@ -890,16 +911,22 @@ function handleChoice(choiceId) {
     // Initialize if null (legacy)
     if (!APP_STATE.userResponse) APP_STATE.userResponse = [];
 
+    const btn = document.getElementById(`choice-${choiceId}`);
+    if (!btn) return;
+
+    // Retirer le style inline d'opacité pour éviter les conflits
+    btn.style.opacity = '';
+    btn.style.animationFillMode = '';
+
     // Toggle selection
     const index = APP_STATE.userResponse.indexOf(choiceId);
     if (index > -1) {
+        // Désélection
         APP_STATE.userResponse.splice(index, 1);
-        // Visual update
-        document.getElementById(`choice-${choiceId}`).classList.remove('selected');
+        btn.classList.remove('selected');
     } else {
+        // Sélection
         APP_STATE.userResponse.push(choiceId);
-        // Visual update
-        const btn = document.getElementById(`choice-${choiceId}`);
         btn.classList.add('selected');
         btn.classList.add('btn-clicked');
 
@@ -914,10 +941,12 @@ function handleChoice(choiceId) {
 
     // Show/Hide Validate Button
     const validateContainer = document.getElementById('validate-container');
-    if (APP_STATE.userResponse.length > 0) {
-        validateContainer.style.display = 'block';
-    } else {
-        validateContainer.style.display = 'none';
+    if (validateContainer) {
+        if (APP_STATE.userResponse.length > 0) {
+            validateContainer.style.display = 'block';
+        } else {
+            validateContainer.style.display = 'none';
+        }
     }
 }
 
@@ -1126,13 +1155,13 @@ function initAudio() {
         });
     }
 
-    // Aggressive Autoplay Logic
+    // Autoplay Logic (événements intentionnels uniquement)
     const attemptPlay = () => {
         audio.play().then(() => {
             updateIcon();
             hideMusicPrompt();
             // Success! Remove all interaction listeners
-            ['click', 'mousemove', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+            ['click', 'keydown', 'touchstart'].forEach(event => {
                 document.body.removeEventListener(event, attemptPlay);
             });
         }).catch(error => {
@@ -1145,8 +1174,8 @@ function initAudio() {
     // Try immediately
     attemptPlay();
 
-    // Add listeners for ANY interaction to start music
-    ['click', 'mousemove', 'keydown', 'touchstart', 'scroll'].forEach(event => {
+    // Add listeners for intentional interactions only (pas mousemove/scroll)
+    ['click', 'keydown', 'touchstart'].forEach(event => {
         document.body.addEventListener(event, attemptPlay, { once: true });
     });
 }

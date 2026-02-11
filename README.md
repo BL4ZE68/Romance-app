@@ -2,7 +2,7 @@
 
 Une expérience web interactive romantique progressive du 10 au 14 février 2026, culminant avec une surprise spéciale pour la Saint-Valentin.
 
-![Version](https://img.shields.io/badge/version-1.0.0-pink)
+![Version](https://img.shields.io/badge/version-1.1.0-pink)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## ✨ Fonctionnalités
@@ -28,6 +28,13 @@ Une expérience web interactive romantique progressive du 10 au 14 février 2026
 - 📸 **Galerie de souvenirs** : Section cachée pour vos photos (`Ctrl+Shift+G`)
 - 🎁 **Easter egg secret** : Message caché (5 clics sur le titre)
 - 🔧 **Mode développeur** : Accès à tous les jours pour tester (`Ctrl+Shift+D`)
+- 🎵 **Musique de fond** : Avec contrôle manuel et démarrage non-intrusif
+
+### ♿ Accessibilité
+- **Reduced motion** : Respect de `prefers-reduced-motion` pour les animations
+- **Navigation clavier** : États `:focus-visible` sur tous les éléments interactifs
+- **Responsive avancé** : Support des très petits écrans (<360px) et mode paysage mobile
+- **Scrollbar personnalisé** : Design élégant sur tous les navigateurs
 
 ## 🚀 Installation
 
@@ -130,14 +137,24 @@ Romance app/
 - Réduction du nombre d'éléments animés (cœurs : 15→8)
 - Antialiasing des polices activé
 - Typewriter optimisé (20ms→15ms)
+- Nettoyage automatique des intervals (countdown)
+- Autoplay audio non-intrusif (pas de mousemove/scroll)
+
+## 🔒 Sécurité
+
+- Protection XSS dans le système de notifications
+- Gestion sécurisée du localStorage (try/catch)
+- Pas de dépendances externes vulnérables
 
 ## 📱 Compatibilité
 
 - ✅ Chrome / Edge (recommandé)
-- ✅ Firefox
+- ✅ Firefox (scrollbar stylisé inclus)
 - ✅ Safari
 - ✅ Mobile (iOS / Android)
 - ✅ Responsive (320px → 1920px)
+- ✅ Mode paysage mobile
+- ✅ Navigation clavier complète
 
 ## 🤝 Contribution
 

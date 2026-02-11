@@ -41,19 +41,76 @@
     --inner-glow: inset 0 0 20px rgba(255, 255, 255, 0.05);
 }
 
-/* Performance optimizations */
-* {
+/* ===========================
+   Reset & Base Styles
+   =========================== */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===========================
-   Reset & Base Styles
+   Accessibilité - Reduced Motion
    =========================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ===========================
+   Scrollbar personnalisé
+   =========================== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary-pink), var(--deep-red));
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-pink);
+}
+
+/* Firefox */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-pink) rgba(255, 255, 255, 0.02);
+}
+
+/* ===========================
+   Sélection de texte stylisée
+   =========================== */
+::selection {
+    background: var(--primary-pink);
+    color: white;
+    text-shadow: none;
+}
+
+::-moz-selection {
+    background: var(--primary-pink);
+    color: white;
+    text-shadow: none;
 }
 
 body {
@@ -230,6 +287,19 @@ body::before {
     background-clip: text;
     margin-bottom: var(--spacing-sm);
     letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 0 40px rgba(255, 77, 136, 0.5);
+    animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    0% {
+        filter: drop-shadow(0 0 10px rgba(255, 77, 136, 0.3));
+    }
+    100% {
+        filter: drop-shadow(0 0 25px rgba(255, 77, 136, 0.6));
+    }
 }
 
 .date-indicator {
@@ -413,6 +483,37 @@ body::before {
     transform: translateY(-1px) scale(0.98);
 }
 
+/* Focus visible pour accessibilité clavier */
+.primary-btn:focus-visible,
+.choice-btn:focus-visible,
+.review-btn:focus-visible,
+.quiz-option:focus-visible {
+    outline: 2px solid var(--primary-pink);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(255, 77, 136, 0.3);
+}
+
+/* Effet Shimmer sur bouton principal */
+.primary-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.primary-btn:hover::before {
+    left: 100%;
+}
+
 /* ===========================
    Countdown Timer
    =========================== */
@@ -430,9 +531,19 @@ body::before {
 
 .countdown-item {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: var(--spacing-md);
     min-width: 80px;
+    border: 1px solid rgba(255, 107, 157, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.countdown-item:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 77, 136, 0.2);
+    border-color: rgba(255, 107, 157, 0.3);
 }
 
 .countdown-value {
@@ -489,6 +600,24 @@ body::before {
 .nav-dot.locked {
     cursor: not-allowed;
     opacity: 0.3;
+}
+
+.nav-dot:focus-visible {
+    outline: 2px solid var(--primary-pink);
+    outline-offset: 2px;
+}
+
+.nav-dot.active {
+    animation: navPulse 2s ease-in-out infinite;
+}
+
+@keyframes navPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px var(--primary-pink);
+    }
+    50% {
+        box-shadow: 0 0 25px var(--primary-pink), 0 0 35px rgba(255, 77, 136, 0.5);
+    }
 }
 
 /* ===========================
@@ -646,7 +775,7 @@ body::before {
     }
 
     to {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(0);
     }
 }
@@ -747,6 +876,63 @@ body::before {
 }
 
 /* ===========================
+   Effet Ripple sur boutons
+   =========================== */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0);
+    animation: rippleEffect 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ===========================
+   Effet Glow sur les cartes au survol
+   =========================== */
+.day-card {
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.day-card:hover {
+    box-shadow: 
+        var(--shadow-strong), 
+        var(--inner-glow),
+        0 0 60px rgba(255, 77, 136, 0.15);
+}
+
+/* ===========================
+   Animation douce pour les choix sélectionnés
+   =========================== */
+.choice-btn.selected {
+    /* Utiliser une transition au lieu d'animation pour éviter de reset l'opacité */
+    opacity: 1 !important;
+}
+
+/* ===========================
+   Amélioration du loading
+   =========================== */
+.loading-text {
+    animation: loadingPulse 2s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ===========================
    Quiz Game Styles
    =========================== */
 .quiz-container {
@@ -834,8 +1020,8 @@ body::before {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: var(--primary-pink);
-    opacity: 0.1;
+    background: var(--romantic-gradient);
+    opacity: 0.15;
     transform: translate(-50%, -50%);
     transition: width 0.6s ease, height 0.6s ease;
 }
@@ -847,34 +1033,9 @@ body::before {
 
 .quiz-option:hover {
     border-color: var(--primary-pink);
-    box-shadow: 0 10px 30px rgba(255, 77, 136, 0.15);
+    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.3);
     background: rgba(255, 77, 136, 0.05);
     transform: translateX(5px);
-}
-
-.quiz-option::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: var(--romantic-gradient);
-    opacity: 0.2;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-}
-
-.quiz-option:hover::before {
-    width: 400px;
-    height: 400px;
-}
-
-.quiz-option:hover {
-    border-color: var(--primary-pink);
-    transform: translateX(5px);
-    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.3);
 }
 
 /* Quiz Results */
@@ -1016,6 +1177,84 @@ body::before {
 
     .day-card {
         padding: var(--spacing-md);
+        border-radius: 24px;
+    }
+
+    .primary-btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    .notification-toast {
+        min-width: auto;
+        max-width: calc(100vw - 40px);
+        font-size: 0.85rem;
+    }
+}
+
+/* Très petits écrans */
+@media (max-width: 360px) {
+    .app-title {
+        font-size: 1.5rem;
+    }
+
+    .day-theme {
+        font-size: 1.25rem;
+    }
+
+    .day-message {
+        font-size: 0.95rem;
+    }
+
+    .countdown-timer {
+        gap: var(--spacing-sm);
+    }
+
+    .countdown-item {
+        min-width: 55px;
+        padding: var(--spacing-sm);
+    }
+
+    .countdown-value {
+        font-size: 1.5rem;
+    }
+
+    .countdown-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* Mode paysage mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .app-header {
+        padding: var(--spacing-sm) 0;
+    }
+
+    .app-title {
+        font-size: 1.5rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .content-area {
+        padding: var(--spacing-sm) 0;
+    }
+
+    .day-card {
+        padding: var(--spacing-md);
+    }
+
+    .day-message {
+        font-size: 0.95rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .navigation {
+        padding: var(--spacing-sm) 0;
+    }
+
+    .final-heart {
+        font-size: 2.5rem;
+        margin: var(--spacing-sm) 0;
     }
 }
 
@@ -1336,6 +1575,22 @@ body::before {
 
 .music-control.playing i {
     animation: rock-music 1s ease-in-out infinite alternate;
+}
+
+.music-control:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+}
+
+.gallery-close-btn:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+}
+
+.music-start-btn:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(255, 77, 136, 0.4);
 }
 
 @keyframes pulse-music {
